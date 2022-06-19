@@ -1,0 +1,92 @@
+---
+name: app-name
+
+# Uncomment to add defaults
+deployment:
+  # labels:
+  #   test: label
+  # annotations:
+  #   test: annotation
+  replicas: 2
+  # strategy:
+  #   type: RollingUpdate
+  #   maxUnavailable: 25%
+  #   maxSurge: 25%
+  # tolerations:
+  # - key: "key1"
+  #   operator: "Equal"
+  #   value: "value1"
+  #   effect: "NoSchedule"
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: disktype
+  #           operator: In
+  #           values:
+  #           - ssd
+  container:
+    imageRepository: arepo/animage
+    imageTag: 1.0.0
+    imagePullPolicy: IfNotPresent 
+    # command: ["/bin/sh"]
+    # args: ["-c", "while true; do echo hello; sleep 10;done"]
+    ports:
+      - containerPort: 80
+        name: http
+        protocol: TCP
+    probes:
+      liveness:
+        enabled: true
+        type: http
+        path: /ping
+        port: 80
+        initialDelaySeconds: 10
+        timeoutSeconds: 2
+        failureThreshold: 5
+        # command:
+        # - cat
+        # - /tmp/healthy
+      readiness:
+        enabled: true
+        type: http
+        path: /ready
+        port: 80
+        initialDelaySeconds: 10
+        timeoutSeconds: 2
+        failureThreshold: 5
+        # command:
+        # - cat
+        # - /tmp/healthy
+    resources: {}
+    # resources:
+    #   requests:
+    #     memory: 10Mi
+    #     cpu: 10m
+    #   limits:
+    #     memory: 20Mi
+    #     cpu: 30m
+
+storage: {}
+# storage:
+# - name: local
+#   mountPath: "/var/lib&local"
+#   hostPath:
+#     path: "/tmp/"
+# - name: empty
+#   mountPath: "/var/lib/empty"
+#   emptyDir:
+#     medium: {}
+
+service:
+  # labels:
+  #   test: label
+  # annotations:
+  #   test: annotation
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http

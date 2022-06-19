@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+    {{- if .Values.deployment.labels }}
+    {{- range $key, $value := .Values.deployment.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+    {{- end }}
+  {{- if .Values.deployment.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.deployment.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+  {{- if .Values.deployment.strategy }}
+  strategy:
+    type: {{ .Values.deployment.strategy.type }}
+    {{- if eq .Values.deployment.strategy.type "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.deployment.strategy.maxUnavailable}}
+      maxSurge: {{ .Values.deployment.strategy.maxSurge}}
+    {{- end }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+        {{- if .Values.deployment.labels }}
+        {{- range $key, $value := .Values.deployment.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+      {{- if .Values.deployment.annotations }}
+      annotations:
+        {{- range $key, $value := .Values.deployment.annotations }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- if .Values.deployment.tolerations }}
+      tolerations: {{ toYaml .Values.deployment.tolerations | nindent 6 }}
+      {{- end }}
+      {{- if .Values.deployment.affinity }}
+      affinity: {{ toYaml .Values.deployment.affinity | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.name }}
+        image: "{{ .Values.deployment.container.imageRepository }}:{{ .Values.deployment.container.imageTag }}"
+        imagePullPolicy: {{ .Values.deployment.container.imagePullPolicy }}
+         {{- if .Values.deployment.container.command}}
+        command:
+        {{- toYaml .Values.deployment.container.command | nindent 8 }}
+        {{- end }}
+        {{- if .Values.deployment.container.args}}
+        args:
+        {{- toYaml .Values.deployment.container.args | nindent 8 }}
+        {{- end }}
+        {{- if .Values.env}}
+        env:
+          {{- toYaml .Values.env | nindent 10 }}
+        {{- end}}
+        {{- if .Values.deployment.container.ports}}
+        ports:
+          {{- range $index, $port := .Values.deployment.container.ports }}
+          - containerPort: {{ $port.containerPort }}
+            name: {{ $port.name }}
+            {{- if $port.protocol }}
+            protocol: {{ $port.protocol }}
+            {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.deployment.container.probes }}
+        {{- if .Values.deployment.container.probes.liveness.enabled }}
+        livenessProbe:
+          {{- if eq .Values.deployment.container.probes.liveness.type "http" }}
+          httpGet:
+            path: {{ .Values.deployment.container.probes.liveness.path }}
+            port: {{ .Values.deployment.container.probes.liveness.port }}
+          {{- end }}
+          {{- if eq .Values.deployment.container.probes.liveness.type "exec" }}
+          exec:
+            command: 
+            {{- toYaml .Values.deployment.container.probes.liveness.command | nindent 12 }}
+          {{- end }}
+          initialDelaySeconds: {{ .Values.deployment.container.probes.liveness.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.deployment.container.probes.liveness.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.container.probes.liveness.failureThreshold }}
+        {{- end }}
+        {{- if .Values.deployment.container.probes.readiness.enabled }}
+        readinessProbe:
+          {{- if eq .Values.deployment.container.probes.readiness.type "http" }}
+          httpGet:
+            path: {{ .Values.deployment.container.probes.readiness.path }}
+            port: {{ .Values.deployment.container.probes.readiness.port }}
+          {{- end }}
+          {{- if eq .Values.deployment.container.probes.readiness.type "exec" }}
+          exec:
+            command: 
+            {{- toYaml .Values.deployment.container.probes.readiness.command | nindent 12 }}
+          {{- end }}
+          initialDelaySeconds: {{ .Values.deployment.container.probes.readiness.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.deployment.container.probes.readiness.timeoutSeconds }}
+          failureThreshold: {{ .Values.deployment.container.probes.readiness.failureThreshold }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.deployment.container.resources }}
+        resources:
+        {{- toYaml .Values.deployment.container.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.storage }}
+        volumeMounts:
+        {{- range $index, $storage := .Values.storage }}
+        - mountPath: {{ $storage.mountPath }}
+          name: {{ $storage.name }}
+          {{- if $storage.readOnly }}
+          readOnly: {{ $storage.readOnly }}
+          {{- end }}
+          {{- if $storage.subPath }}
+          subPath: {{ $storage.subPath }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- if .Values.storage }}
+      volumes:
+      {{- range $index, $storage := .Values.storage }}
+      - name: {{ $storage.name }}
+        {{- if or $storage.class $storage.claimExists }}
+        persistentVolumeClaim:
+          claimName: {{ $storage.name }}
+        {{- else if $storage.emptyDir  | default dict }}
+        emptyDir: {{- toYaml $storage.emptyDir | nindent 10 }}
+        {{- else if $storage.hostPath }}
+        hostPath: {{- toYaml $storage.hostPath | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- end }}
+        
