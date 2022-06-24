@@ -1,0 +1,43 @@
+name: clients-workflow
+serviceAccountName: argo-workflows
+workflowTemplate: {}
+  # entrypoint: client-dag
+  # arguments:
+  #   parameters:
+  #   - name: name
+  #     value: "name"
+  #   - name: email
+  #     value: "email"
+  #   - name: id
+  #     value: "id"
+  # templates:
+  # - name: whalesay
+  #   inputs:
+  #     parameters:
+  #     - name: key
+  #   container:
+  #     image: docker/whalesay
+  #     command: [cowsay]
+  #     args: ["{{inputs.parameters.key}}"]
+  # - name: client-dag
+  #   dag:
+  #     tasks:
+  #     - name: client-name
+  #       template: whalesay
+  #       arguments:
+  #         parameters:
+  #         - name: key
+  #           value: "{{workflow.parameters.name}}"
+  #     - name: client-id
+  #       template: whalesay
+  #       arguments:
+  #         parameters:
+  #         - name: key
+  #           value: "{{workflow.parameters.id}}"
+  #     - name: client-email
+  #       depends: "client-id && client-name"
+  #       template: whalesay
+  #       arguments:
+  #         parameters:
+  #         - name: key
+  #           value: "{{workflow.parameters.email}}"

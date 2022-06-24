@@ -1,0 +1,38 @@
+ {{- if $.Values.workflowTemplate }}
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: {{ $.Values.name }}
+  generateName: {{ $.Values.name }}-
+spec:
+  serviceAccountName: {{ $.Values.serviceAccountName }}
+  {{- if $.Values.workflowTemplate.entrypoint }}
+  entrypoint: {{ $.Values.workflowTemplate.entrypoint }}
+  {{- end }}
+  {{- if $.Values.workflowTemplate.podGC }}
+  {{- if $.Values.workflowTemplate.podGC.strategy }}
+  podGC:
+    strategy: {{ $.Values.workflowTemplate.podGC.strategy }}
+  {{- end }}
+  {{- end }}
+  {{- if $.Values.workflowTemplate.ttlStrategy }}
+  ttlStrategy:
+    {{- if $.Values.workflowTemplate.ttlStrategy.secondsAfterSuccess }}
+    secondsAfterSuccess: {{ $.Values.workflowTemplate.ttlStrategy.secondsAfterSuccess }}
+    {{- end }}
+    {{- if $.Values.workflowTemplate.ttlStrategy.secondsAfterCompletion }}
+    secondsAfterCompletion: {{ $.Values.workflowTemplate.ttlStrategy.secondsAfterCompletion }}
+    {{- end }}
+    {{- if $.Values.workflowTemplate.ttlStrategy.secondsAfterFailure }}
+    secondsAfterFailure: {{ $.Values.workflowTemplate.ttlStrategy.secondsAfterFailure }}
+    {{- end }}
+  {{- end }}
+  {{- if $.Values.workflowTemplate.arguments }}
+  arguments:
+    {{- toYaml $.Values.workflowTemplate.arguments | nindent 4 }}
+  {{- end }}
+  {{- if $.Values.workflowTemplate.templates }}
+  templates:
+    {{- toYaml $.Values.workflowTemplate.templates | nindent 2 }}
+  {{- end }}
+{{- end }}
