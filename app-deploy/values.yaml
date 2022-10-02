@@ -3,6 +3,7 @@ name: app-name
 
 # Uncomment to add defaults
 deployment:
+  enabled: false
   # labels:
   #   test: label
   # annotations:
@@ -73,6 +74,25 @@ deployment:
   # - name: TEST_ENV_2
   #   value: TEST_VALUE_2
 
+job:
+  enabled: true
+  schedule: "1 * * * *"
+  # labels:
+  #   test: label
+  # annotations:
+  #   test: annotation
+  container:
+    imageRepository: arepo/animage
+    imageTag: 1.0.0
+    imagePullPolicy: IfNotPresent 
+    # command: ["/bin/sh"]
+    # args: ["-c", "while true; do echo hello; sleep 10;done"]
+  restartPolicy: Never
+  # env:
+  # - name: TEST_ENV
+  #   value: TEST_VALUE
+  # - name: TEST_ENV_2
+  #   value: TEST_VALUE_2
 
 storage: {}
 # storage:

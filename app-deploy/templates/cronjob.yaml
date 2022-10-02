@@ -1,0 +1,56 @@
+{{- if and .Values.job.enabled .Values.job.schedule }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  schedule: "{{ .Values.job.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ .Values.name }}-job
+            image: "{{ .Values.job.container.imageRepository }}:{{ .Values.job.container.imageTag }}"
+            imagePullPolicy: {{ .Values.job.container.imagePullPolicy }}
+            {{- if .Values.job.container.command}}
+            command:
+            {{- toYaml .Values.job.container.command | nindent 8 }}
+            {{- end }}
+            {{- if .Values.job.container.args}}
+            args:
+            {{- toYaml .Values.job.container.args | nindent 8 }}
+            {{- end }}
+            {{- if .Values.job.env}}
+            env:
+              {{- toYaml .Values.job.env | nindent 10 }}
+            {{- end}}
+          {{- if .Values.storage }}
+            volumeMounts:
+            {{- range $index, $storage := .Values.storage }}
+            - mountPath: {{ $storage.mountPath }}
+              name: {{ $storage.name }}
+              {{- if $storage.readOnly }}
+              readOnly: {{ $storage.readOnly }}
+              {{- end }}
+              {{- if $storage.subPath }}
+              subPath: {{ $storage.subPath }}
+              {{- end }}
+            {{- end }}
+          volumes:
+          {{- range $index, $storage := .Values.storage }}
+          - name: {{ $storage.name }}
+            {{- if or $storage.class $storage.claimExists }}
+            persistentVolumeClaim:
+              claimName: {{ $storage.name }}
+            {{- else if $storage.emptyDir }}
+            emptyDir: {{- toYaml $storage.emptyDir | nindent 14 }}
+            {{- else if $storage.azureFile }}
+            azureFile: {{- toYaml $storage.azureFile | nindent 14 }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+          restartPolicy: {{ .Values.job.restartPolicy }}
+{{- end }}
