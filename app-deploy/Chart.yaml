@@ -1,4 +1,4 @@
 apiVersion: v1
 description: Generic Helm chart to deploy apps in kubernetes.
 name: app-deploy
-version: 1.0.2
+version: 1.0.3
