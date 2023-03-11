@@ -1,4 +1,4 @@
 apiVersion: v1
 description: Generic Helm chart to deploy argo workflows in kubernetes.
 name: workflow-deploy
-version: 1.0.0
+version: 1.0.1
