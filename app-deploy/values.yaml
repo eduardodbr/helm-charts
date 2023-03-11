@@ -75,7 +75,7 @@ deployment:
   #   value: TEST_VALUE_2
 
 job:
-  enabled: true
+  enabled: false
   schedule: "1 * * * *"
   # labels:
   #   test: label
