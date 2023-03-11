@@ -25,7 +25,7 @@ spec:
             {{- end }}
             {{- if .Values.job.env}}
             env:
-              {{- toYaml .Values.job.env | nindent 10 }}
+              {{- toYaml .Values.job.env | nindent 12 }}
             {{- end}}
           {{- if .Values.storage }}
             volumeMounts:
