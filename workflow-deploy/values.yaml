@@ -1,6 +1,18 @@
 name: clients-workflow
 serviceAccountName: argo-workflows
 workflowTemplate: {}
+  # metrics:
+  #   - name: status_failed
+  #     labels:
+  #       - key: workflow_type
+  #         value: 'clients'
+  #       - key: tenant_id
+  #         value:  '{{workflow.parameters.ID}}'
+  #     help: If the latest workflow failed
+  #     when: '{{workflow.status}} == Failed || {{workflow.status}} == Error'
+  #     gauge:
+  #       value: '1'
+  #       realtime: null
   # entrypoint: client-dag
   # arguments:
   #   parameters:

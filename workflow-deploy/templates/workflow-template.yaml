@@ -35,4 +35,9 @@ spec:
   templates:
     {{- toYaml $.Values.workflowTemplate.templates | nindent 2 }}
   {{- end }}
+  {{- if $.Values.workflowTemplate.metrics }}
+  metrics:
+    prometheus:
+    {{- toYaml $.Values.workflowTemplate.metrics | nindent 6 }}
+  {{- end }}
 {{- end }}
